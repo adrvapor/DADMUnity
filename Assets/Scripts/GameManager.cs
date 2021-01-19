@@ -3,6 +3,7 @@ using UnityEngine;
 using TMPro;
 using System.Collections;
 using System;
+using NUnit.Framework.Constraints;
 
 public class GameManager : MonoBehaviour
 {
@@ -17,6 +18,10 @@ public class GameManager : MonoBehaviour
     public GameObject pointsUI;
     public TextMeshProUGUI pointstext;
     public GameObject[] gameTypeUI;
+    public AudioClip[] Acciones = new AudioClip[6];
+    public AudioClip Victoria, Derrota;
+
+    private AudioSource sonido;
 
     public TextMeshProUGUI debugText;
 
@@ -40,6 +45,7 @@ public class GameManager : MonoBehaviour
         Input.gyro.enabled = true;
         Input.compass.enabled = true;
 
+        sonido = gameObject.GetComponent<AudioSource>();
 
         RandomGameType();
     }
@@ -49,13 +55,16 @@ public class GameManager : MonoBehaviour
     {
         debugText.text = Input.compass.trueHeading.ToString();
 
-        if(gameState == GameStates.RUNNING)
+        
+
+        if (gameState == GameStates.RUNNING)
             switch (gameType)
             {
                 case GameTypes.TOUCH:
                     if (Input.touchCount > 0)
                         if (Input.GetTouch(0).phase == TouchPhase.Began)
                             GameWon();
+                    
                     break;
 
                 case GameTypes.SHAKE:
@@ -111,10 +120,19 @@ public class GameManager : MonoBehaviour
         gameType = (GameTypes)UnityEngine.Random.Range(0, numberGameTypes);
         gameTypeUI[(int)gameType].SetActive(true);
 
+        if (sonido = null)
+        {
+            sonido = gameObject.GetComponent<AudioSource>();
+        }
+
+        sonido.clip = Acciones[(int)gameType];
+        sonido.Play();
         // sonido de cada tipo de juego
 
         if (gameType == GameTypes.LEFT)
         {
+             
+
             float compassReference = Input.compass.trueHeading;
             compassLimitStart = compassReference - 110;
             if (compassLimitStart < 0) compassLimitStart += 360;
@@ -158,12 +176,14 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt("lastScore", points);
         if (points > PlayerPrefs.GetInt("bestScore", 0))
         {
-            //sonido de record
+            sonido.clip = Victoria;
+            sonido.Play();
             PlayerPrefs.SetInt("bestScore", points);
         }
         else
         {
-            //sonido de lástima
+            sonido.clip = Derrota;
+            sonido.Play();
         }
 
         Input.location.Stop();
