@@ -6,15 +6,17 @@ using TMPro;
 
 public class MenuManager : MonoBehaviour
 {
-    public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI lastScoreText;
+    public TextMeshProUGUI bestScoreText;
+
 
     public void Start()
     {
         //Scores.lastScore = PlayerPrefs.GetInt("lastScore", 0);
         //Scores.bestScore = PlayerPrefs.GetInt("bestScore", 0);
 
-        scoreText.text = "Última puntuación: " + PlayerPrefs.GetInt("lastScore", 0) + 
-                        "\nMejor puntuación: " + PlayerPrefs.GetInt("bestScore", 0);
+        lastScoreText.text = PlayerPrefs.GetInt("lastScore", 0).ToString();
+        bestScoreText.text = PlayerPrefs.GetInt("bestScore", 0).ToString();
     }
 
     public void StartGame()
