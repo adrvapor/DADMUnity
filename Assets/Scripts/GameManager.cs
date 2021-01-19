@@ -34,7 +34,7 @@ public class GameManager : MonoBehaviour
     {
         pointstext = pointsUI.GetComponent<TextMeshProUGUI>();
 
-        Input.location.Stop();
+        //Input.location.Stop();
         Input.location.Start();
 
         Input.gyro.enabled = true;
@@ -60,7 +60,7 @@ public class GameManager : MonoBehaviour
 
                 case GameTypes.SHAKE:
                     //Debug.Log(Input.acceleration.sqrMagnitude);
-                    if (Input.acceleration.sqrMagnitude > 10)
+                    if (Input.acceleration.sqrMagnitude > minShake)
                         GameWon();
                     break;
 
@@ -92,18 +92,10 @@ public class GameManager : MonoBehaviour
                     break;
                     
             }
-
-        /*
-        if (gameState == GameStates.SUCCESS)
-        {
-            points++;
-            RandomGameType();
-        }
-        */
-
+        
         timeElapsedSinceGame += Time.deltaTime;
 
-        if(timeElapsedSinceGame >= maxTime)//gameState == GameStates.FAILURE)
+        if(timeElapsedSinceGame >= maxTime)
         {
             if (gameState == GameStates.SUCCESS)
                 RandomGameType();
@@ -118,6 +110,8 @@ public class GameManager : MonoBehaviour
     {
         gameType = (GameTypes)UnityEngine.Random.Range(0, numberGameTypes);
         gameTypeUI[(int)gameType].SetActive(true);
+
+        // sonido de cada tipo de juego
 
         if (gameType == GameTypes.LEFT)
         {
@@ -140,9 +134,6 @@ public class GameManager : MonoBehaviour
         gameState = GameStates.RUNNING;
 
         timeElapsedSinceGame = 0;
-        //timeElapsedSinceGame -= maxTime;
-
-        //poner las cosas visuales del siguiente juego
     }
 
     public void GameWon()
@@ -151,6 +142,7 @@ public class GameManager : MonoBehaviour
         gameState = GameStates.SUCCESS;
         points++;
         pointstext.text = "Points: " + points;
+        // sonido de acierto
         StartCoroutine(ShowCorrect());
     }
 
@@ -170,8 +162,9 @@ public class GameManager : MonoBehaviour
             PlayerPrefs.SetInt("bestScore", points);
         }
         else
-            Debug.Log("no lo suficiente");
-        //sonido de lástima
+        {
+            //sonido de lástima
+        }
 
         Input.location.Stop();
 
