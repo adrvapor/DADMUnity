@@ -12,9 +12,6 @@ public class MenuManager : MonoBehaviour
 
     public void Start()
     {
-        //Scores.lastScore = PlayerPrefs.GetInt("lastScore", 0);
-        //Scores.bestScore = PlayerPrefs.GetInt("bestScore", 0);
-
         lastScoreText.text = PlayerPrefs.GetInt("lastScore", 0).ToString();
         bestScoreText.text = PlayerPrefs.GetInt("bestScore", 0).ToString();
     }

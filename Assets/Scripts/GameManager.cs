@@ -18,44 +18,40 @@ public class GameManager : MonoBehaviour
     public GameObject pointsUI;
     public TextMeshProUGUI pointstext;
     public GameObject[] gameTypeUI;
-    public AudioClip[] Acciones = new AudioClip[6];
-    public AudioClip Victoria, Derrota;
+    public AudioClip[] Acciones;
+    public AudioClip Victoria, Derrota, Acierto;
 
-    private AudioSource sonido;
+    public AudioSource sonido;
 
     public TextMeshProUGUI debugText;
 
     const float minShake = 10;
-    const float minDecib = -15;
-    const float maxTime = 2;
+    const float minDecib = -10f;
+    float maxTime = 2.5f;
 
     private float compassLimitStart;
     private float compassLimitEnd;
 
     private float timeElapsedSinceGame;
 
-    // Start is called before the first frame update
     void Start()
     {
+
         pointstext = pointsUI.GetComponent<TextMeshProUGUI>();
 
-        //Input.location.Stop();
         Input.location.Start();
 
         Input.gyro.enabled = true;
         Input.compass.enabled = true;
 
-        sonido = gameObject.GetComponent<AudioSource>();
+        sonido = GetComponent<AudioSource>();
 
         RandomGameType();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        debugText.text = Input.compass.trueHeading.ToString();
-
-        
+        //debugText.text = MicInput.MicLoudnessinDecibels.ToString("###.#");
 
         if (gameState == GameStates.RUNNING)
             switch (gameType)
@@ -64,11 +60,9 @@ public class GameManager : MonoBehaviour
                     if (Input.touchCount > 0)
                         if (Input.GetTouch(0).phase == TouchPhase.Began)
                             GameWon();
-                    
                     break;
 
                 case GameTypes.SHAKE:
-                    //Debug.Log(Input.acceleration.sqrMagnitude);
                     if (Input.acceleration.sqrMagnitude > minShake)
                         GameWon();
                     break;
@@ -81,8 +75,7 @@ public class GameManager : MonoBehaviour
                     break;
 
                 case GameTypes.BLOW:
-                    //Debug.Log(MicInput.MicLoudnessinDecibels);
-                    if (MicInput.MicLoudnessinDecibels > minDecib)
+                    if (MicInput.MicLoudnessinDecibels >= minDecib)
                         GameWon();
                     break;
 
@@ -107,10 +100,13 @@ public class GameManager : MonoBehaviour
         if(timeElapsedSinceGame >= maxTime)
         {
             if (gameState == GameStates.SUCCESS)
+            {
+                if (maxTime > 1.5) maxTime -= 0.02f;
                 RandomGameType();
+            }                
             else
             {
-                EndGame();
+                if(gameState != GameStates.FAILURE) EndGame();
             }
         }
     }
@@ -120,19 +116,17 @@ public class GameManager : MonoBehaviour
         gameType = (GameTypes)UnityEngine.Random.Range(0, numberGameTypes);
         gameTypeUI[(int)gameType].SetActive(true);
 
-        if (sonido = null)
+        if (sonido == null)
         {
-            sonido = gameObject.GetComponent<AudioSource>();
+            sonido = GetComponent<AudioSource>();
         }
 
         sonido.clip = Acciones[(int)gameType];
+
         sonido.Play();
-        // sonido de cada tipo de juego
 
         if (gameType == GameTypes.LEFT)
         {
-             
-
             float compassReference = Input.compass.trueHeading;
             compassLimitStart = compassReference - 110;
             if (compassLimitStart < 0) compassLimitStart += 360;
@@ -158,9 +152,13 @@ public class GameManager : MonoBehaviour
     {
         gameTypeUI[(int)gameType].SetActive(false);
         gameState = GameStates.SUCCESS;
+
         points++;
-        pointstext.text = "Points: " + points;
-        // sonido de acierto
+        pointstext.text = points.ToString();
+
+        sonido.clip = Acierto;
+        sonido.Play();
+
         StartCoroutine(ShowCorrect());
     }
 
@@ -173,6 +171,8 @@ public class GameManager : MonoBehaviour
 
     public void EndGame()
     {
+        gameState = GameStates.FAILURE;
+
         PlayerPrefs.SetInt("lastScore", points);
         if (points > PlayerPrefs.GetInt("bestScore", 0))
         {
@@ -190,6 +190,13 @@ public class GameManager : MonoBehaviour
 
         Input.gyro.enabled = false;
         Input.compass.enabled = false;
+
+        StartCoroutine(GoToMenu());
+    }
+
+    public IEnumerator GoToMenu()
+    {
+        yield return new WaitForSeconds(sonido.clip.length);
 
         SceneManager.LoadScene("Menu");
     }
